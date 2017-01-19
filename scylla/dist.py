@@ -52,7 +52,7 @@ class DistBase:
             for nextitem in deferobj.__getprovidingfor__():
                 waittot = nextitem.__removewaitingon__(deferobj)
                 if waittot == 0:
-                    self.frontier.append(self.runcondition.pop(nextitem))
+                    self.frontier.append(self.runcondition.pop(nextitem._sensitive))
             self.cond.notifyAll()
             self.jobqueue.remove(deferobj._sensitive)
 
@@ -121,7 +121,7 @@ class DistBase:
                 self.frontier.append((f, args, kwargs, deferobj, callback))
                 self.cond.notifyAll()
             else:
-                self.runcondition[deferobj] = (f,args,kwargs,deferobj,callback)
+                self.runcondition[deferobj._sensitive] = (f,args,kwargs,deferobj,callback)
 
             self.jobqueue.add(deferobj._sensitive)
 
