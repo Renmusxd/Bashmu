@@ -1,9 +1,12 @@
 
-# Scylla v0.1
+# Bashmu v0.1
 A pretty python distributed computing framework
 
+## Name
+Bashmu is the Mesopotamian origin story for the Hydra. This seven headed serpent could likely do many things with each head at the same time, I felt the metaphor was appropriate. 
+
 ## Purpose
-Scylla aims to add distributed computing with as little code as possible, it therefore makes use of python's decorators to add functions to the network. The results of those functions are wrapped in Deferred objects (much like async Futures) which act almost exactly like their original python counterpart. Nearly all attributes of the deferred object are forwarded to the value once it is computed.
+Bashmu aims to add distributed computing with as little code as possible, it therefore makes use of python's decorators to add functions to the network. The results of those functions are wrapped in Deferred objects (much like async Futures) which act almost exactly like their original python counterpart. Nearly all attributes of the deferred object are forwarded to the value once it is computed.
 
 ## Example Code:
 
@@ -11,7 +14,7 @@ Scylla aims to add distributed computing with as little code as possible, it the
 The following example computes 5 values, the last four depend on the result of the first one and are thus dispatched to workers after the first is completed. That being said you will notice that the first print statement is run immediately whereas the second print statement comes about 6 seconds afterwards.
 
 ```python
-from scylla.distserver import DistServer
+from bashmu.distserver import DistServer
 
 ds = DistServer('localhost',1708)
 
@@ -51,7 +54,7 @@ Currently the system does not check instance variables (recursively) of argument
 Consider mapping the function, simply using python's `map` function isn't efficient because it creates a generator which doesn't actually call the function until the generator's `next` is called. As such mapping should be done pseudo-manually as seen below: 
 
 ```python
-from scylla.distserver import DistServer
+from bashmu.distserver import DistServer
 
 ds = DistServer('localhost',1708)
 

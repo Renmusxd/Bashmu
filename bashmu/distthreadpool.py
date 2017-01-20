@@ -1,4 +1,4 @@
-from scylla.dist import DistBase
+from bashmu.dist import DistBase
 from multiprocessing import Pool, RLock
 import dill
 

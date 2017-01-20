@@ -1,5 +1,5 @@
-from scylla.dist import DistBase, Deferred
-from scylla.FormatSock import FormatSocket
+from bashmu.dist import DistBase, Deferred
+from bashmu.FormatSock import FormatSocket
 import dill
 import socket
 from threading import Lock, Condition, Thread

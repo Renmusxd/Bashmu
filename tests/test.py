@@ -1,4 +1,4 @@
-from scylla.distthreadpool import DistThreadPool
+from bashmu.distthreadpool import DistThreadPool
 import time
 
 ds = DistThreadPool()

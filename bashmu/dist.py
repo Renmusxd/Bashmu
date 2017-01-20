@@ -1,4 +1,4 @@
-from scylla.Deferred import Deferred
+from bashmu.Deferred import Deferred
 from threading import RLock, Condition
 from threading import Thread
 from functools import wraps

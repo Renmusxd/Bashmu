@@ -1,4 +1,4 @@
-from scylla.distworker import Worker
+from bashmu.distworker import Worker
 import time
 
 w = Worker('localhost',1708)

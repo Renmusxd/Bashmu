@@ -1,5 +1,5 @@
-from scylla.FormatSock import FormatSocket
-from scylla.distserver import DistServer
+from bashmu.FormatSock import FormatSocket
+from bashmu.distserver import DistServer
 import dill
 import socket
 import multiprocessing

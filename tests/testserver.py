@@ -1,4 +1,4 @@
-from scylla.distserver import DistServer
+from bashmu.distserver import DistServer
 
 ds = DistServer()
 ds.wait()
