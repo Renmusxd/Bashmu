@@ -82,3 +82,6 @@ Mapping function:
 [(Deferred: 0), (Deferred: 1), ...]
 Stopping
 ```
+
+### Errors
+Errors an exceptions are raised when the value of a `Deferred` object is requested. The traceback leads to the deferred call and in future versions further debug information will be available.
