@@ -17,6 +17,7 @@ class Deferred:
         self._lock = RLock()
         self._cond = Condition(self._lock)
         self._value = None
+        self._error = None
         self._torun = (fname,args,kwargs)
         self._notifyobservers = {self._cond}
         self._waitingon = set()
@@ -68,9 +69,17 @@ class Deferred:
 
     def __waitforvalue__(self):
         with self._lock:
-            while self._value is None:
+            while self._value is None and self._error is None:
                 self._cond.wait()
-            return self._value
+            if self._error:
+                raise self._error
+            else:
+                return self._value
+
+    def __seterrorvalue__(self, err):
+        with self._lock:
+            self._error = err
+            self._cond.notify()
 
     def __repr__(self):
         with self._lock:

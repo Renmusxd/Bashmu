@@ -35,14 +35,13 @@ class Worker:
 
             def makecustomcallback(jid):
                 def customcallback(result):
-                    res = result
                     cdillbytes = dill.dumps({DistServer.JOBID_JSON: jid,
-                                             DistServer.RESULT_JSON: res})
+                                             DistServer.RESULT_JSON: result})
                     self.fsock.send(cdillbytes)
                 def errorcallback(error):
-                    customcallback(None)
-                    # TODO handle errors
-                    raise error
+                    cdillbytes = dill.dumps({DistServer.JOBID_JSON: jid,
+                                             DistServer.ERROR_JSON: error})
+                    self.fsock.send(cdillbytes)
                 return customcallback, errorcallback
 
             customcallback, errorcallback = makecustomcallback(jobid)

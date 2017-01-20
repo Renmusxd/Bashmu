@@ -19,6 +19,10 @@ def bar(n):
     print("Done",n)
     return n**2
 
+@ds.defer
+def broken():
+    return "1" + 1
+
 if __name__ == "__main__":
     a = foo(1,0)
     b = foo(2,a)
@@ -27,5 +31,8 @@ if __name__ == "__main__":
     e = foo(5,a)
     print("Printing results:")
     print(",".join(map(str,[a,b,c,d,e])))
+
+    f = broken()
+    print(str(f))
 
 ds.stop()

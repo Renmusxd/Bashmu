@@ -14,6 +14,7 @@ class DistServer(DistBase):
     THREADS_JSON = 'threads'
     JOBID_JSON = 'jobid'
     RESULT_JSON = 'result'
+    ERROR_JSON = 'error'
     FUNCTION_JSON = 'f'
     FID_JSON = 'fid'
     ARGS_JSON = 'args'
@@ -56,7 +57,6 @@ class DistServer(DistBase):
 
     def stop(self,wait=True):
         super(DistServer, self).stop(wait=wait)
-        print("Stopping")
         with self.lock:
             for worker in self.allsockets:
                 worker.close()
@@ -151,10 +151,11 @@ class DistServer(DistBase):
             print(self.numWorkerThreads)
             return self.numWorkerThreads
 
-    def dispatch(self,f,args,kwargs,deferobj,callback,addjobargs):
+    def dispatch(self,f,args,kwargs,deferobj,callback,ecallback,addjobargs):
         # Send to worker
         nextworker = self.hasidle.get()
-        threads = nextworker.dispatchJob(f,args,kwargs,deferobj,callback,addjobargs)
+        threads = nextworker.dispatchJob(f,args,kwargs,deferobj,
+                                         callback,ecallback,addjobargs)
         if threads > 0:
             self.hasidle.put(nextworker)
 
@@ -183,11 +184,17 @@ class Client:
                 self.funccache[fid] = dill.loads(dillobj[DistServer.FUNCTION_JSON])
             f = self.funccache[fid]
 
-        def customcallback(result):
-            cdillbytes = dill.dumps({DistServer.JOBID_JSON: jobid,
-                                     DistServer.RESULT_JSON: result})
-            self.fsock.send(cdillbytes)
-        self.distserver.addJob(f,args,kwargs,Deferred(f.__name__,args,kwargs),customcallback)
+        def makecallbacks(jid):
+            def customcallback(result):
+                cdillbytes = dill.dumps({DistServer.JOBID_JSON: jid,
+                                         DistServer.RESULT_JSON: result})
+                self.fsock.send(cdillbytes)
+            def errorcallback(error):
+                cdillbytes = dill.dumps({DistServer.JOBID_JSON: jid,
+                                         DistServer.ERROR_JSON: error})
+                self.fsock.send(cdillbytes)
+            return customcallback, errorcallback
+        self.distserver.addJob(f,args,kwargs,Deferred(f.__name__,args,kwargs),*makecallbacks(jobid))
         # Return 0 to indicate cannot do work
         return 0
 
@@ -217,7 +224,7 @@ class Worker:
         self.jobid = 0
         self.distserver = distserver
 
-    def dispatchJob(self,f,args,kwargs,deferobj,callback,addjobargs):
+    def dispatchJob(self,f,args,kwargs,deferobj,callback,ecallback,addjobargs):
         with self.lock:
             # If all threads actually taken up to client to deal with it
             if id(f) not in self.functioncache:
@@ -234,7 +241,7 @@ class Worker:
                             DistServer.JOBID_JSON: self.jobid}
             dillbytes = dill.dumps(dilldict)
             self.fsock.send(dillbytes)
-            self.deferobjs[self.jobid] = (deferobj,callback,addjobargs)
+            self.deferobjs[self.jobid] = (deferobj,callback,ecallback,addjobargs)
             self.jobid += 1
             self.threads -= 1
             return self.threads
@@ -244,13 +251,22 @@ class Worker:
         dillobj = dill.loads(msg)
 
         jobid = dillobj[DistServer.JOBID_JSON]
-        result = dillobj[DistServer.RESULT_JSON]
-        with self.lock:
-            deferobj, callback, addjobargs = self.deferobjs.pop(jobid)
-            deferobj.__setvalue__(result)
-            self.threads += 1
-            callback(deferobj)
-            return self.threads
+        if DistServer.RESULT_JSON in dillobj:
+            result = dillobj[DistServer.RESULT_JSON]
+
+            with self.lock:
+                deferobj, callback, ecallback, addjobargs = self.deferobjs.pop(jobid)
+                callback(result)
+                deferobj.__setvalue__(result)
+                self.threads += 1
+                return self.threads
+        elif DistServer.ERROR_JSON in dillobj:
+            error = dillobj[DistServer.ERROR_JSON]
+            with self.lock:
+                deferobj, callback, ecallback, addjobargs = self.deferobjs.pop(jobid)
+                self.threads += 1
+                ecallback(error)
+                return self.threads
 
     def hasdata(self):
         return self.fsock.hasdata()

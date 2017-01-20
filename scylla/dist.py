@@ -23,7 +23,7 @@ class DistBase:
                 while len(self.frontier) == 0 and self.running:
                     self.cond.wait()
                 if len(self.frontier) > 0:
-                    f, args, kwargs, deferobj, callback = self.frontier.pop()
+                    f, args, kwargs, deferobj, callback, errorcallback = self.frontier.pop()
             if f is not None:
                 newargs = [item.__waitforvalue__() if type(item)==Deferred else item for item in args]
                 newkwargs = {}
@@ -34,16 +34,27 @@ class DistBase:
                     if type(v)==Deferred:
                         v = v.__waitforvalue__()
                     newkwargs[k] = v
-                def makecallback(foo):
-                    if foo is None:
-                        return self.jobDone
+
+                def makecallbacks(call,ecall,dobj):
+                    if call is None:
+                        ncall = lambda x: self.jobDone(dobj)
                     else:
-                        def newcallback(dobj):
+                        def newcallback(res):
                             self.jobDone(dobj)
-                            if foo is not None:
-                                foo(dobj.__waitforvalue__())
-                        return newcallback
-                self.dispatch(f,newargs,newkwargs,deferobj,makecallback(callback),(f,args,kwargs,deferobj,callback))
+                            call(res)
+                        ncall = newcallback
+                    if ecall is None:
+                        necall = lambda err: self.jobError(dobj,err)
+                    else:
+                        def newecallback(err):
+                            self.jobError(dobj, err)
+                            ecall(err)
+                        necall = newecallback
+                    return ncall, necall
+
+                cfunc, ecfunc = makecallbacks(callback,errorcallback, deferobj)
+                self.dispatch(f,newargs,newkwargs,deferobj,cfunc, ecfunc,
+                              (f,args,kwargs,deferobj,callback,errorcallback))
             with self.lock:
                 shouldrun = self.frontier or self.running
 
@@ -56,17 +67,26 @@ class DistBase:
             self.cond.notifyAll()
             self.jobqueue.remove(deferobj._sensitive)
 
-    def dispatch(self,f,args,kwargs,deferobj,callback,addjobargs):
+    def jobError(self, deferobj, error):
+        deferobj.__seterrorvalue__(error)
+
+    def dispatch(self,f,args,kwargs,deferobj,callback,errorcallback,addjobargs):
         '''
         Dispatch a job to be run
         :param f: function to call
         :param args: args for function
         :param kwargs: kwargs for function
         :param deferobj: Deferred object for job
-        :param callback: function to be called on completion, takes deferobj
+        :param callback: function to be called on completion, takes value
+        :param errorcallback: function to be called on exception, takes error
+        :paramaddjobargs: arguments to call if need to re-dispatch job
         '''
-        deferobj.__setvalue__(f(*args,**kwargs))
-        callback(deferobj)
+        try:
+            val = f(*args,**kwargs)
+            callback(val)
+            deferobj.__setvalue__(val)
+        except Exception as e:
+            errorcallback(e)
 
     def __enter__(self):
         self.start()
@@ -100,7 +120,7 @@ class DistBase:
             self.running = False
             self.cond.notifyAll()
 
-    def addJob(self, f, args, kwargs, deferobj, callback=None):
+    def addJob(self, f, args, kwargs, deferobj, callback=None, errorcallback=None):
         with self.lock:
             totalwaiting = 0
             if type(f)==Deferred:
@@ -118,10 +138,10 @@ class DistBase:
                     kwargs[key].__addprovidingfor__(deferobj)
                     totalwaiting += deferobj.__addwaitingon__(kwargs[key])
             if totalwaiting == 0:
-                self.frontier.append((f, args, kwargs, deferobj, callback))
+                self.frontier.append((f, args, kwargs, deferobj, callback, errorcallback))
                 self.cond.notifyAll()
             else:
-                self.runcondition[deferobj._sensitive] = (f,args,kwargs,deferobj,callback)
+                self.runcondition[deferobj._sensitive] = (f,args,kwargs,deferobj,callback,errorcallback)
 
             self.jobqueue.add(deferobj._sensitive)
 
