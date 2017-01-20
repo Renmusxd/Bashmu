@@ -43,7 +43,6 @@ Results in:
 ```
 Printing results:
 1,2,2,2,2
-Stopping
 ```
 
 ### Caveats
@@ -83,7 +82,6 @@ Mapping function:
 [(Deferred: [<function bar at 0x102507598>,(0,),{}]), ...]
 ['0', '1', '4', '9', '16', '25', '36', '49', '64', '81']
 [(Deferred: 0), (Deferred: 1), ...]
-Stopping
 ```
 
 ### Errors
