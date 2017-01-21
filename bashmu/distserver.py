@@ -39,11 +39,12 @@ class DistServer(DistBase):
         if start:
             self.start()
 
-    def start(self):
-        if super(DistServer, self).start():
+    def start(self,daemonic=True):
+        if super(DistServer, self).start(daemonic=daemonic):
             with self.lock:
                 if self.local:
                     t = Thread(target=self.acceptloop)
+                    t.setDaemon(daemonic)
                     t.start()
                 else:
                     self.ss = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -53,6 +54,7 @@ class DistServer(DistBase):
                     self.allsockets.append(sock_obj)
                     self.hasidle.put(sock_obj)
                 t = Thread(target=self.serveloop)
+                t.setDaemon(daemonic)
                 t.start()
 
     def stop(self,wait=True):

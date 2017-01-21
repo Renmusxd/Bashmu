@@ -94,7 +94,7 @@ class DistBase:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.stop()
 
-    def start(self):
+    def start(self,daemonic=True):
         '''
         Starts the Distribution, returns true if started, false if
         already started
@@ -104,6 +104,7 @@ class DistBase:
             if not self.running:
                 self.running = True
                 t = Thread(target=self.queueLoop)
+                t.setDaemon(daemonic)
                 t.start()
                 return True
             return False
