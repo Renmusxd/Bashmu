@@ -2,8 +2,6 @@ import struct
 import sys
 from threading import Lock
 
-import time
-
 
 class FormatSocket:
     SIZE_BYTES = 4

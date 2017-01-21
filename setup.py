@@ -9,6 +9,6 @@ setup(name='Bashmu',
       author_email='sumnernh@gmail.com',
       url='https://github.com/Renmusxd/Bashmu',
       packages=['Bashmu'],
-      keywords="distributed computing decorator pretty",
+      keywords="pretty decorator distributed computing",
       license="MIT",
       )
