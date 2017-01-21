@@ -72,7 +72,7 @@ class Deferred:
             while self._value is None and self._error is None:
                 self._cond.wait()
             if self._error:
-                raise DeferredException(*self._torun,self._error)
+                raise self._error
             else:
                 return self._value
 
@@ -309,17 +309,6 @@ class Deferred:
         return self.__waitforvalue__().__setstate__(state)
     def __sizeof__(self):
         return self.__waitforvalue__().__sizeof__()
-
-class DeferredException(Exception):
-    def __init__(self, f, args, kwargs, error):
-        super(DeferredException, self).__init__(DeferredException.make_error_message(f,args,kwargs,error))
-
-    @staticmethod
-    def make_error_message(f,args,kwargs,error):
-        errortype = str(type(error).__name__)
-        fname = str(f)
-        argsstring = 'args='+args +', kwargs='+ kwargs
-        return "[{errortype}] {fname}({argstring}): {errormessage}".format(errortype=errortype,fname=fname,argstring=argsstring,errormessage=str(error))
 
 def value(deferred):
     if type(deferred)==Deferred:

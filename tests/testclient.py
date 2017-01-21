@@ -20,19 +20,19 @@ def bar(n):
     return n**2
 
 @ds.defer
-def broken():
+def broken(*args,**kwargs):
     return "1" + 1
 
 if __name__ == "__main__":
-    a = foo(1,0)
-    b = foo(2,a)
-    c = foo(3,a)
-    d = foo(4,a)
-    e = foo(5,a)
-    print("Printing results:")
-    print(",".join(map(str,[a,b,c,d,e])))
+    # a = foo(1,0)
+    # b = foo(2,a)
+    # c = foo(3,a)
+    # d = foo(4,a)
+    # e = foo(5,a)
+    # print("Printing results:")
+    # print(",".join(map(str,[a,b,c,d,e])))
 
-    f = broken()
+    f = broken(2,3,abc=1)
     print(str(f))
 
 ds.stop()

@@ -117,32 +117,39 @@ class DistServer(DistBase):
                             with self.lock:
                                 print("[IOError] Removing:",r)
                                 try:
+                                    print("\tAttempting to close... ",end='')
                                     r.close()
-                                except IOError:
-                                    pass
+                                    print("done")
+                                except IOError as e:
+                                    print("\n\tError on close: ",e)
                                 unfinishedjobs = r.getunfinishedjobs()
                                 self.allsockets.remove(r)
+                                if r in self.hasidle:
+                                    self.hasidle.remove(r)
                             for jobargs in unfinishedjobs:
                                 print("Re-adding ",jobargs)
                                 self.addJob(*jobargs)
                                 print("Done")
                     else:
                         os.read(self.selectpipes[0],1)
-                with self.lock:
-                    for x in xs:
+
+                for x in xs:
+                    with self.lock:
+                        print("[Exception] Removing:", x)
                         try:
+                            print("\tAttempting to close... ",end='')
                             x.close()
-                        except IOError:
-                            pass
-                        finally:
-                            print("[Exception] Removing:", x)
-                            try:
-                                x.close()
-                            except IOError:
-                                pass
-                            unfinishedjobs = r.getunfinishedjobs()
-                            print(unfinishedjobs)
-                            self.allsockets.remove(x)
+                            print("\tdone")
+                        except IOError as e:
+                            print("\n\tError on close: ", e)
+                        unfinishedjobs = x.getunfinishedjobs()
+                        self.allsockets.remove(x)
+                        if x in self.hasidle:
+                            self.hasidle.remove(x)
+                    for jobargs in unfinishedjobs:
+                        print("Re-adding ", jobargs)
+                        self.addJob(*jobargs)
+                        print("Done")
             except OSError:
                 pass
 
@@ -303,3 +310,7 @@ class CheckableQueue(queue.Queue):
     def __contains__(self, item):
         with self.mutex:
             return item in self.queue
+
+    def remove(self, item):
+        with self.mutex:
+            self.queue.remove(item)

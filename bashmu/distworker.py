@@ -3,6 +3,8 @@ from bashmu.distserver import DistServer
 import dill
 import socket
 import multiprocessing
+import sys
+import traceback
 
 
 class Worker:
@@ -45,10 +47,30 @@ class Worker:
                 return customcallback, errorcallback
 
             customcallback, errorcallback = makecustomcallback(jobid)
-            self.pool.apply_async(undillfunc, [fcode,jobid]+list(args), kwargs,
+            self.pool.apply_async(undillfunc, [fcode]+list(args), kwargs,
                                   customcallback, errorcallback)
 
 
-def undillfunc(fcode,jobid, *args, **kwargs):
+class DeferredException(Exception):
+    def __init__(self, message):
+        super(DeferredException, self).__init__(message)
+
+    @staticmethod
+    def make_error_message(f,args,kwargs,error):
+        errortype = str(type(error).__name__)
+        fname = str(f.__name__)
+        total_args = list(str(arg) for arg in args) + list(str(key)+"="+str(kwargs[key]) for key in kwargs.keys())
+        argsstring = ", ".join(total_args)
+        return "[{errortype}] {fname}({argstring}): {errormessage}".format(errortype=errortype,fname=fname,
+                                                                           argstring=argsstring,
+                                                                           errormessage=str(error))
+
+
+def undillfunc(fcode, *args, **kwargs):
     newf = dill.loads(fcode)
-    return newf(*args, **kwargs)
+    try:
+        return newf(*args, **kwargs)
+    except Exception as error:
+        message = DeferredException.make_error_message(newf,args,kwargs,error)
+        raise DeferredException(message)
+
