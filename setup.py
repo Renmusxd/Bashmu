@@ -2,7 +2,7 @@
 
 from distutils.core import setup
 
-setup(name='Scylla',
+setup(name='Bashmu',
       version='0.1',
       description='A Pretty Python Distributed Computing Framework',
       author='Sumner Hearth',
