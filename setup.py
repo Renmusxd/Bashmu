@@ -11,4 +11,5 @@ setup(name='Bashmu',
       packages=['Bashmu'],
       keywords="pretty decorator distributed computing",
       license="MIT",
+      install_requires=["dill"]
       )
