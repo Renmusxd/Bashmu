@@ -2,7 +2,6 @@ from bashmu.distserver import DistServer
 
 ds = DistServer('localhost',1708)
 
-
 @ds.defer
 def foo(n, s):
     import time
@@ -24,15 +23,21 @@ def broken(*args,**kwargs):
     return "1" + 1
 
 if __name__ == "__main__":
-    # a = foo(1,0)
-    # b = foo(2,a)
-    # c = foo(3,a)
-    # d = foo(4,a)
-    # e = foo(5,a)
-    # print("Printing results:")
-    # print(",".join(map(str,[a,b,c,d,e])))
+    a = foo(1,0)
+    b = foo(2,a)
+    c = foo(3,a)
+    d = foo(4,a)
+    e = foo(5,a)
+    print("Printing results:")
+    print(",".join(map(str,[a,b,c,d,e])))
 
-    f = broken(2,3,abc=1)
-    print(str(f))
+    print("Calculating sum:")
+    res1 = []
+    for i in range(100):
+        res1.append(foo(2,i))
+    print(sum(res1))
+
+    # f = broken(2,3,abc=1)
+    # print(str(f))
 
 ds.stop()

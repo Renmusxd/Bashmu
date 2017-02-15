@@ -236,15 +236,17 @@ class Worker:
     def dispatchJob(self,f,args,kwargs,deferobj,callback,ecallback,addjobargs):
         with self.lock:
             # If all threads actually taken up to client to deal with it
-            if id(f) not in self.functioncache:
-                dilldict = {DistServer.FUNCTION_JSON: dill.dumps(f),
-                            DistServer.FID_JSON: id(f),
+            bytecode = dill.dumps(f)
+            keyid = hash(bytecode)
+            if keyid not in self.functioncache:
+                dilldict = {DistServer.FUNCTION_JSON: bytecode,
+                            DistServer.FID_JSON: keyid,
                             DistServer.ARGS_JSON: args,
                             DistServer.KWARGS_JSON: kwargs,
                             DistServer.JOBID_JSON: self.jobid}
-                self.functioncache.add(id(f))
+                self.functioncache.add(keyid)
             else:
-                dilldict = {DistServer.FID_JSON: id(f),
+                dilldict = {DistServer.FID_JSON: keyid,
                             DistServer.ARGS_JSON: args,
                             DistServer.KWARGS_JSON: kwargs,
                             DistServer.JOBID_JSON: self.jobid}
@@ -284,7 +286,7 @@ class Worker:
         jobstoadd = []
         with self.lock:
             for jobid in self.deferobjs.keys():
-                deferobj, callback, addjobargs = self.deferobjs[jobid]
+                deferobj, callback, ecallback, addjobargs = self.deferobjs[jobid]
                 jobstoadd.append(addjobargs)
         return jobstoadd
 
