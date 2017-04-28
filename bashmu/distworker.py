@@ -1,10 +1,9 @@
 from bashmu.FormatSock import FormatSocket
 from bashmu.distserver import DistServer
+from bashmu.serverconstants import *
 import dill
 import socket
 import multiprocessing
-import sys
-import traceback
 
 
 class Worker:
@@ -22,33 +21,36 @@ class Worker:
         sock.send(DistServer.WORKER_TAG)
         self.fsock = FormatSocket(sock)
 
-        dillbytes = dill.dumps({DistServer.THREADS_JSON:self.threads})
+        dillbytes = dill.dumps({THREADS_JSON:self.threads})
         self.fsock.send(dillbytes)
         while True:
             msg = self.fsock.recv()
             dillobj = dill.loads(msg)
-            fid = dillobj[DistServer.FID_JSON]
-            jobid = dillobj[DistServer.JOBID_JSON]
-            args = dillobj[DistServer.ARGS_JSON]
-            kwargs = dillobj[DistServer.KWARGS_JSON]
-            if DistServer.FUNCTION_JSON in dillobj:
-                self.funccache[fid] = dillobj[DistServer.FUNCTION_JSON]
-            fcode = self.funccache[fid]
 
-            def makecustomcallback(jid):
-                def customcallback(result):
-                    cdillbytes = dill.dumps({DistServer.JOBID_JSON: jid,
-                                             DistServer.RESULT_JSON: result})
-                    self.fsock.send(cdillbytes)
-                def errorcallback(error):
-                    cdillbytes = dill.dumps({DistServer.JOBID_JSON: jid,
-                                             DistServer.ERROR_JSON: error})
-                    self.fsock.send(cdillbytes)
-                return customcallback, errorcallback
+            fid = dillobj[FID_JSON]
+            if FUNCTION_JSON in dillobj:
+                self.funccache[fid] = dillobj[FUNCTION_JSON]
 
-            customcallback, errorcallback = makecustomcallback(jobid)
-            self.pool.apply_async(undillfunc, [fcode]+list(args), kwargs,
-                                  customcallback, errorcallback)
+            if JOBID_JSON in dillobj:
+                jobid = dillobj[JOBID_JSON]
+                args = dillobj[ARGS_JSON]
+                kwargs = dillobj[KWARGS_JSON]
+                fcode = self.funccache[fid]
+
+                def makecustomcallback(jid):
+                    def customcallback(result):
+                        cdillbytes = dill.dumps({JOBID_JSON: jid,
+                                                 RESULT_JSON: result})
+                        self.fsock.send(cdillbytes)
+                    def errorcallback(error):
+                        cdillbytes = dill.dumps({JOBID_JSON: jid,
+                                                 ERROR_JSON: error})
+                        self.fsock.send(cdillbytes)
+                    return customcallback, errorcallback
+
+                customcallback, errorcallback = makecustomcallback(jobid)
+                self.pool.apply_async(undillfunc, [fcode]+list(args), kwargs,
+                                      customcallback, errorcallback)
 
 
 class DeferredException(Exception):

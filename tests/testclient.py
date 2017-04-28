@@ -2,6 +2,7 @@ from bashmu.distserver import DistServer
 
 ds = DistServer('localhost',1708)
 
+
 @ds.defer
 def foo(n, s):
     import time
@@ -9,6 +10,7 @@ def foo(n, s):
     time.sleep(n)
     print("Done", n, s)
     return s + 1
+
 
 @ds.defer
 def bar(n):
@@ -18,8 +20,9 @@ def bar(n):
     print("Done",n)
     return n**2
 
+
 @ds.defer
-def broken(*args,**kwargs):
+def broken(*args, **kwargs):
     return "1" + 1
 
 if __name__ == "__main__":
