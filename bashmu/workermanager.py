@@ -1,4 +1,4 @@
-from FormatSock import FormatSocket
+from bashmu.FormatSock import FormatSocket
 from bashmu.serverconstants import *
 from threading import Lock, Condition
 import dill

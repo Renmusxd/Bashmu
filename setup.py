@@ -12,6 +12,5 @@ setup(name='Bashmu',
       packages=['Bashmu'],
       keywords="pretty decorator distributed computing",
       license="MIT",
-      install_requires=["dill"],
-      ext_modules=cythonize("ext/FormatSock.pyx")
+      install_requires=["dill"]
       )

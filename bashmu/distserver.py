@@ -1,5 +1,5 @@
 from bashmu.dist import DistBase, Deferred
-from FormatSock import FormatSocket
+from bashmu.FormatSock import FormatSocket
 from bashmu.workermanager import WorkerManager, Worker
 from bashmu.serverconstants import *
 
