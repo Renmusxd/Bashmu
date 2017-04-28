@@ -157,7 +157,7 @@ class DistBase:
             return deferobj
         return wrapper
 
-    def deferargs(self, callback=None):
+    def deferargs(self, funcs=list(),resources=list(),callback=None):
         def defer(f):
             @wraps(f)
             def wrapper(*args, **kwargs):

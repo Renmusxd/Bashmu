@@ -1,2 +1,5 @@
 **.pyc
+**.c
+**.so
+build/
 .idea

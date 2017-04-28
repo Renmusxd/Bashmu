@@ -1,4 +1,4 @@
-from bashmu.FormatSock import FormatSocket
+from FormatSock import FormatSocket
 from bashmu.distserver import DistServer
 from bashmu.serverconstants import *
 import dill
