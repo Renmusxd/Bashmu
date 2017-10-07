@@ -1,4 +1,8 @@
-from bashmu.dist import DistBase
+try:
+    from bashmu.dist import DistBase
+except ImportError:
+    from .dist import DistBase
+
 from multiprocessing import Pool, RLock
 import dill
 

@@ -1,7 +1,14 @@
-from bashmu.dist import DistBase, Deferred
-from bashmu.FormatSock import FormatSocket
-from bashmu.workermanager import WorkerManager, Worker
-from bashmu.serverconstants import *
+try:
+    from bashmu.dist import DistBase, Deferred
+    from bashmu.FormatSock import FormatSocket
+    from bashmu.workermanager import WorkerManager, Worker
+    from bashmu.serverconstants import *
+except ImportError:
+    from .dist import DistBase, Deferred
+    from .FormatSock import FormatSocket
+    from .workermanager import WorkerManager, Worker
+    from .serverconstants import *
+
 
 import dill
 import socket
@@ -24,7 +31,6 @@ class DistServer(DistBase):
         '''
         super().__init__(start=False)
         self.allsockets = []
-        #self.hasidle = CheckableQueue()
         self.workers = WorkerManager()
         self.ss = None
         self.selectpipes = os.pipe()

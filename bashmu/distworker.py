@@ -1,6 +1,11 @@
-from bashmu.FormatSock import FormatSocket
-from bashmu.distserver import DistServer
-from bashmu.serverconstants import *
+try:
+    from bashmu.FormatSock import FormatSocket
+    from bashmu.distserver import DistServer
+    from bashmu.serverconstants import *
+except ImportError:
+    from .FormatSock import FormatSocket
+    from .distserver import DistServer
+    from .serverconstants import *
 import dill
 import socket
 import multiprocessing

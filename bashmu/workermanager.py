@@ -1,8 +1,13 @@
-from bashmu.FormatSock import FormatSocket
-from bashmu.serverconstants import *
+try:
+    from bashmu.FormatSock import FormatSocket
+    from bashmu.serverconstants import *
+except ImportError:
+    from .FormatSock import FormatSocket
+    from .serverconstants import *
 from threading import Lock, Condition
 import dill
 import queue
+
 
 class WorkerManager:
 

@@ -1,7 +1,11 @@
-from bashmu.Deferred import Deferred
+try:
+    from bashmu.Deferred import Deferred
+except ImportError:
+    from .Deferred import Deferred
 from threading import RLock, Condition
 from threading import Thread
 from functools import wraps
+
 
 class DistBase:
     def __init__(self, start=True):
@@ -157,7 +161,7 @@ class DistBase:
             return deferobj
         return wrapper
 
-    def deferargs(self, funcs=list(),resources=list(),callback=None):
+    def deferargs(self, funcs=list(), resources=list(), callback=None):
         def defer(f):
             @wraps(f)
             def wrapper(*args, **kwargs):
