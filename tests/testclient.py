@@ -34,10 +34,11 @@ if __name__ == "__main__":
     print("Printing results:")
     print(",".join(map(str,[a,b,c,d,e])))
 
-    print("Calculating sum:")
+    print("Making array...")
     res1 = []
     for i in range(100):
         res1.append(foo(2,i))
+    print("Calculating sum:")
     print(sum(res1))
 
     # f = broken(2,3,abc=1)
